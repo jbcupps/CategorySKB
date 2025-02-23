@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SKB Particle Modeler - Welcome</title>
+    <title>4D Topology Visualization</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
 </head>
 <body>
@@ -80,6 +80,29 @@
             </div>
         </div>
     </div>
+
+    <h1>4D Tetrahedron Visualization</h1>
+
+    <form method="POST" action="/plot_tetrahedron">
+        <label for="angle">Rotation Angle (radians):</label>
+        <input type="number" id="angle" name="angle" step="0.1" value="0"><br><br>
+
+        <label for="plane">Rotation Plane:</label>
+        <select id="plane" name="plane">
+            <option value="xy">xy</option>
+            <option value="xz">xz</option>
+            <option value="xw">xw</option>
+            <option value="yz">yz</option>
+            <option value="yw">yw</option>
+            <option value="zw">zw</option>
+        </select><br><br>
+
+        <input type="submit" value="Rotate and Plot">
+    </form>
+
+    {% if image %}
+        <img src="{{ image }}" alt="4D Tetrahedron Projection">
+    {% endif %}
 
     <style>
         .wizard-container {
