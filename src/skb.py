@@ -1,5 +1,5 @@
 import numpy as np
-from typing import List, Tuple, Dict
+from typing import List, Tuple
 
 class SubSKB:
     """Represents a sub-SKB component with a twist number."""
@@ -42,9 +42,11 @@ class SKB:
             i, j (int): Indices of sub-SKBs
             value (int): Linking number between sub-SKBs i and j
         """
+        if i >= len(self.sub_skbs) or j >= len(self.sub_skbs) or i < 0 or j < 0:
+            raise ValueError("Invalid sub-SKB index")
         if i != j:
-            self.linking_numbers[i,j] = value
-            self.linking_numbers[j,i] = -value
+            self.linking_numbers[i, j] = value
+            self.linking_numbers[j, i] = -value
     
     def get_total_twist_number(self) -> int:
         """Calculate total twist number (sum of sub-SKB twist numbers)."""
@@ -52,7 +54,6 @@ class SKB:
     
     def get_total_linking_number(self) -> int:
         """Calculate total linking number (sum of upper triangle)."""
-        # Sum only upper triangle to avoid counting each pair twice
         return int(np.sum(np.triu(self.linking_numbers)))
     
     def get_charge(self) -> float:
@@ -73,39 +74,33 @@ class SKB:
 
 def create_particle(name: str, twist_numbers: List[int], 
                    linking_pairs: List[Tuple[int, int, int]]) -> SKB:
-    """
-    Helper function to create common particles.
-    
-    Args:
-        name (str): Particle name (for reference)
-        twist_numbers (List[int]): List of twist numbers for sub-SKBs
-        linking_pairs (List[Tuple[int,int,int]]): List of (i,j,value) for linking numbers
-    
-    Returns:
-        SKB: Configured SKB representing the particle
-    """
+    """Create an SKB configuration for a specific particle."""
     sub_skbs = [SubSKB(t) for t in twist_numbers]
     skb = SKB(sub_skbs)
     for i, j, value in linking_pairs:
         skb.set_linking_number(i, j, value)
     return skb
 
-# Example particle configurations
+# Predefined particle configurations
 PARTICLE_CONFIGS = {
     'proton': {
-        'twist_numbers': [2, 2, -1],  # Two up quarks (2/3), one down quark (-1/3)
-        'linking_pairs': [(0,1,1), (1,2,1), (0,2,1)]  # All pairs linked
+        'twist_numbers': [2, 2, -1],
+        'linking_pairs': [(0,1,1), (1,2,1), (0,2,1)]
     },
     'neutron': {
-        'twist_numbers': [2, -1, -1],  # One up quark (2/3), two down quarks (-1/3)
+        'twist_numbers': [1, 1, 1],
         'linking_pairs': [(0,1,1), (1,2,1), (0,2,1)]
     },
     'pion_plus': {
-        'twist_numbers': [2, 1],  # up and anti-down quarks
+        'twist_numbers': [2, 1],
         'linking_pairs': [(0,1,1)]
     },
     'electron': {
-        'twist_numbers': [-3],  # Single sub-SKB with -1 charge
+        'twist_numbers': [-3],
+        'linking_pairs': []
+    },
+    'muon': {
+        'twist_numbers': [-3],
         'linking_pairs': []
     }
 }
