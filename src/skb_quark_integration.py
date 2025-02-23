@@ -2,7 +2,7 @@ import numpy as np
 from typing import List, Tuple, Dict
 
 class SubSKB:
-    def __init__(self, twist_number: int, generational_parameter: int = 1, color: str = 'red'):
+    def __init__(self, twist_number: int, generational_parameter: int, color: str):
         self.twist_number = twist_number
         self.generational_parameter = generational_parameter
         self.color = color
@@ -31,9 +31,6 @@ class SKB:
     
     def get_charge(self) -> float:
         return self.get_total_twist_number() / 3
-    
-    def get_mass(self, gamma: float, delta: float, epsilon: float) -> float:
-        return gamma * len(self.sub_skbs) + delta * self.get_total_linking_number() + epsilon
 
 QUARK_DATA = {
     'up': {'charge': 2/3, 'generation': 1, 'mass_range': (2.0, 2.5)},
@@ -44,30 +41,45 @@ QUARK_DATA = {
     'bottom': {'charge': -1/3, 'generation': 3, 'mass_range': (4180, 4220)}
 }
 
-def create_particle(name: str, twist_numbers: List[int], linking_pairs: List[Tuple[int, int, int]]) -> SKB:
-    sub_skbs = [SubSKB(t) for t in twist_numbers]  # Default generation and color for simplicity
+def validate_sub_skb(sub_skb: SubSKB, quark_name: str, gamma: float, epsilon: float) -> Dict[str, bool]:
+    results = {
+        'charge_match': sub_skb.get_charge() == QUARK_DATA[quark_name]['charge'],
+        'flavor_match': sub_skb.generational_parameter == QUARK_DATA[quark_name]['generation'],
+        'color_valid': sub_skb.color in ['red', 'green', 'blue'],
+        'mass_match': (QUARK_DATA[quark_name]['mass_range'][0] <= 
+                       (gamma * sub_skb.generational_parameter + epsilon) <= 
+                       QUARK_DATA[quark_name]['mass_range'][1]),
+        'topological_complete': isinstance(sub_skb.twist_number, int) and sub_skb.generational_parameter in [1, 2, 3]
+    }
+    results['overall_match'] = all(results.values())
+    return results
+
+def create_particle(name: str, twist_numbers: List[int], generational_params: List[int], 
+                   colors: List[str], linking_pairs: List[Tuple[int, int, int]]) -> SKB:
+    sub_skbs = [SubSKB(t, g, c) for t, g, c in zip(twist_numbers, generational_params, colors)]
     skb = SKB(sub_skbs)
     for i, j, value in linking_pairs:
         skb.set_linking_number(i, j, value)
     return skb
 
 PARTICLE_CONFIGS = {
-    'proton': {'twist_numbers': [2, 2, -1], 'linking_pairs': [(0, 1, 1), (1, 2, 1), (0, 2, 1)]},
-    'neutron': {'twist_numbers': [2, -1, -1], 'linking_pairs': [(0, 1, 1), (1, 2, 1), (0, 2, 1)]},
-    'pion_plus': {'twist_numbers': [2, 1], 'linking_pairs': [(0, 1, 1)]},
-    'electron': {'twist_numbers': [-3], 'linking_pairs': []},
-    'muon': {'twist_numbers': [-3], 'linking_pairs': []}
+    'proton': {
+        'twist_numbers': [2, 2, -1],
+        'generational_params': [1, 1, 1],
+        'colors': ['red', 'green', 'blue'],
+        'linking_pairs': [(0, 1, 1), (1, 2, 1), (0, 2, 1)]
+    },
+    'neutron': {
+        'twist_numbers': [2, -1, -1],
+        'generational_params': [1, 1, 1],
+        'colors': ['red', 'green', 'blue'],
+        'linking_pairs': [(0, 1, 1), (1, 2, 1), (0, 2, 1)]
+    }
 }
 
-def validate_sub_skb(sub_skb: SubSKB, quark_name: str, gamma: float, epsilon: float) -> Dict[str, bool]:
-    if quark_name not in QUARK_DATA:
-        return {'error': f"Unknown quark: {quark_name}"}
-    results = {
-        'charge_match': sub_skb.get_charge() == QUARK_DATA[quark_name]['charge'],
-        'flavor_match': sub_skb.generational_parameter == QUARK_DATA[quark_name]['generation'],
-        'color_valid': sub_skb.color in ['red', 'green', 'blue'],
-        'mass_match': QUARK_DATA[quark_name]['mass_range'][0] <= (gamma * sub_skb.generational_parameter + epsilon) <= QUARK_DATA[quark_name]['mass_range'][1],
-        'topological_complete': isinstance(sub_skb.twist_number, int) and sub_skb.generational_parameter in [1, 2, 3]
-    }
-    results['overall_match'] = all(results.values())
-    return results
+# Iteration mechanism
+ITERATION_CONFIGS = [
+    {'twist_number': 2, 'generational_param': 1, 'color': 'red'},
+    {'twist_number': -1, 'generational_param': 1, 'color': 'blue'},
+    {'twist_number': 2, 'generational_param': 2, 'color': 'green'}
+]

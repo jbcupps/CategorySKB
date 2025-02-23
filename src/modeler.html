@@ -3,117 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spacetime Klein Bottle Particle Modeler - Configuration</title>
+    <title>SKB Particle Modeler - Quark Modeler</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="header">
         <div class="container">
             <h1>Spacetime Klein Bottle Particle Modeler</h1>
+            <p>Date: {{ date }}</p>
         </div>
     </div>
 
     <div class="container">
-        <div class="progress-bar">
-            <div class="progress-step active" data-step="1">1</div>
-            <div class="progress-step" data-step="2">2</div>
-            <div class="progress-step" data-step="3">3</div>
+        <div class="navigation">
+            <a href="index.html" class="button secondary">← Introduction</a>
+            <a href="analysis.html" class="button">Particle Analysis →</a>
         </div>
 
-        <div class="card" id="quarkSelection">
-            <h2>Step 1: Select Your Quark Type</h2>
+        <div class="card">
+            <h2>Quark Configuration</h2>
             <div class="info-box">
-                Start by selecting the type of quark you want to model. Each quark has unique properties that will guide the configuration process.
+                Configure and validate a quark using SKB parameters.
             </div>
             <div class="form-group">
                 <label for="quarkSelect">Quark Type</label>
                 <select id="quarkSelect" onchange="updateQuarkInfo()">
-                    <option value="">Please select a quark type...</option>
-                    <option value="up">Up Quark</option>
-                    <option value="down">Down Quark</option>
-                    <option value="charm">Charm Quark</option>
-                    <option value="strange">Strange Quark</option>
-                    <option value="top">Top Quark</option>
-                    <option value="bottom">Bottom Quark</option>
+                    <option value="">Select quark...</option>
+                    <option value="up">Up</option>
+                    <option value="down">Down</option>
+                    <option value="charm">Charm</option>
+                    <option value="strange">Strange</option>
+                    <option value="top">Top</option>
+                    <option value="bottom">Bottom</option>
                 </select>
-                <p class="help-text">The quark type determines the fundamental properties we'll be working with.</p>
             </div>
-            <div id="quarkInfo" class="info-box hidden">
-                <h3>Selected Quark Properties:</h3>
-                <div id="quarkProperties"></div>
-            </div>
-        </div>
-
-        <div class="card" id="skbConfiguration">
-            <h2>Step 2: Configure SKB Parameters</h2>
-            <div class="info-box">
-                Configure the specific parameters for your Spacetime Klein Bottle (SKB). These values will determine the physical properties of your particle.
-            </div>
+            <div id="quarkInfo" class="info-box hidden"></div>
             <div class="form-group">
                 <label for="twistNumber">Twist Number</label>
                 <select id="twistNumber">
-                    <option value="">Select twist number...</option>
-                    <option value="-3">-3</option>
-                    <option value="-2">-2</option>
-                    <option value="-1">-1</option>
-                    <option value="0">0</option>
+                    <option value="2">2 (+2/3 charge)</option>
+                    <option value="-1">-1 (-1/3 charge)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="generationParam">Generation</label>
+                <select id="generationParam">
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                 </select>
-                <p class="help-text">The twist number affects the charge of the particle.</p>
             </div>
-
-            <div class="form-group">
-                <label for="generationParam">Generation Parameter</label>
-                <select id="generationParam">
-                    <option value="">Select generation...</option>
-                    <option value="1">First Generation</option>
-                    <option value="2">Second Generation</option>
-                    <option value="3">Third Generation</option>
-                </select>
-                <p class="help-text">Determines the generation family of the quark.</p>
-            </div>
-
             <div class="form-group">
                 <label for="colorCharge">Color Charge</label>
                 <select id="colorCharge">
-                    <option value="">Select color charge...</option>
                     <option value="red">Red</option>
                     <option value="green">Green</option>
                     <option value="blue">Blue</option>
                 </select>
-                <p class="help-text">The color charge is a fundamental property in quantum chromodynamics.</p>
             </div>
-
-            <div class="form-group">
-                <label for="gamma">Mass Scale (Gamma)</label>
-                <input type="number" id="gamma" value="1.0" step="0.1">
-                <p class="help-text">Scaling factor for mass calculations.</p>
+            <div class="button-group">
+                <button class="button" onclick="validateConfiguration()">Validate</button>
+                <button class="button secondary" onclick="iterateConfiguration()">Iterate</button>
             </div>
-
-            <div class="form-group">
-                <label for="epsilon">Mass Offset (Epsilon)</label>
-                <input type="number" id="epsilon" value="1.0" step="0.1">
-                <p class="help-text">Base offset for mass calculations.</p>
-            </div>
-        </div>
-
-        <div class="card" id="validation">
-            <h2>Step 3: Validation Results</h2>
-            <div class="info-box">
-                Review the validation results for your particle configuration. All checks must pass for a valid particle model.
-            </div>
-            <button class="button" onclick="validateConfiguration()">Validate Configuration</button>
             <div id="validationResults" class="results"></div>
-        </div>
-
-        <div class="navigation">
-            <a href="index.html" class="button secondary">← Back to Introduction</a>
-            <div>
-                <button class="button secondary" onclick="previousStep()">Previous</button>
-                <button class="button" onclick="nextStep()">Next</button>
-            </div>
         </div>
     </div>
 
@@ -127,116 +79,54 @@
             'bottom': {'charge': -1/3, 'generation': 3, 'mass_range': [4180, 4220]}
         };
 
-        let currentStep = 1;
+        const ITERATION_CONFIGS = [
+            {'twist_number': 2, 'generation': 1, 'color': 'red'},
+            {'twist_number': -1, 'generation': 1, 'color': 'blue'},
+            {'twist_number': 2, 'generation': 2, 'color': 'green'}
+        ];
+        let iterationIndex = 0;
 
         function updateQuarkInfo() {
-            const quarkSelect = document.getElementById('quarkSelect');
-            const quarkInfo = document.getElementById('quarkInfo');
-            const quarkProperties = document.getElementById('quarkProperties');
-            
-            if (quarkSelect.value) {
-                const quark = QUARK_DATA[quarkSelect.value];
-                quarkProperties.innerHTML = `
-                    <div><strong>Charge:</strong> ${quark.charge}</div>
-                    <div><strong>Generation:</strong> ${quark.generation}</div>
-                    <div><strong>Mass Range:</strong> ${quark.mass_range[0]} - ${quark.mass_range[1]} MeV</div>
-                `;
-                quarkInfo.classList.remove('hidden');
+            const quark = document.getElementById('quarkSelect').value;
+            const infoDiv = document.getElementById('quarkInfo');
+            if (quark) {
+                const data = QUARK_DATA[quark];
+                infoDiv.innerHTML = `Charge: ${data.charge}, Generation: ${data.generation}, Mass: ${data.mass_range[0]} - ${data.mass_range[1]} MeV`;
+                infoDiv.classList.remove('hidden');
             } else {
-                quarkInfo.classList.add('hidden');
+                infoDiv.classList.add('hidden');
             }
         }
 
-        function validateConfiguration() {
+        async function validateConfiguration() {
             const quark = document.getElementById('quarkSelect').value;
             const twist = parseInt(document.getElementById('twistNumber').value);
             const generation = parseInt(document.getElementById('generationParam').value);
             const color = document.getElementById('colorCharge').value;
-            const gamma = parseFloat(document.getElementById('gamma').value);
-            const epsilon = parseFloat(document.getElementById('epsilon').value);
-
-            if (!quark || isNaN(twist) || isNaN(generation) || !color || isNaN(gamma) || isNaN(epsilon)) {
-                alert('Please fill in all fields before validation');
+            if (!quark) {
+                document.getElementById('validationResults').innerHTML = '<p class="error">Please select a quark</p>';
                 return;
             }
-
-            const results = {
-                charge_match: checkCharge(twist, quark),
-                flavor_match: checkFlavor(generation, quark),
-                color_valid: ['red', 'green', 'blue'].includes(color),
-                mass_match: checkMass(generation, gamma, epsilon, quark),
-                topological_complete: checkTopological(twist, generation)
-            };
-
-            results.overall_match = Object.values(results).every(v => v);
-            displayResults(results);
-        }
-
-        function checkCharge(twist, quark) {
-            const predictedCharge = twist / 3;
-            return predictedCharge === QUARK_DATA[quark].charge;
-        }
-
-        function checkFlavor(generation, quark) {
-            return generation === QUARK_DATA[quark].generation;
-        }
-
-        function checkMass(generation, gamma, epsilon, quark) {
-            const predictedMass = gamma * generation + epsilon;
-            const range = QUARK_DATA[quark].mass_range;
-            return predictedMass >= range[0] && predictedMass <= range[1];
-        }
-
-        function checkTopological(twist, generation) {
-            return Number.isInteger(twist) && [1, 2, 3].includes(generation);
-        }
-
-        function displayResults(results) {
-            const resultsDiv = document.getElementById('validationResults');
+            const data = await fetch('/validate_quark', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({quark, twist_number: twist, generation, color})
+            }).then(res => res.json());
             let html = '';
-            
-            for (const [criterion, result] of Object.entries(results)) {
-                const className = result ? 'success' : 'failure';
-                const icon = result ? '✓' : '✗';
-                const label = criterion.replace(/_/g, ' ').toUpperCase();
-                html += `
-                    <div class="result-item ${className}">
-                        <i>${icon}</i>
-                        <span>${label}</span>
-                    </div>`;
+            for (const [key, value] of Object.entries(data)) {
+                html += `<div class="result-item ${value ? 'success' : 'failure'}">${key}: ${value ? '✓' : '✗'}</div>`;
             }
-
-            resultsDiv.innerHTML = html;
+            document.getElementById('validationResults').innerHTML = html;
         }
 
-        function updateProgressBar() {
-            document.querySelectorAll('.progress-step').forEach(step => {
-                const stepNum = parseInt(step.dataset.step);
-                step.classList.remove('active', 'completed');
-                if (stepNum === currentStep) {
-                    step.classList.add('active');
-                } else if (stepNum < currentStep) {
-                    step.classList.add('completed');
-                }
-            });
+        function iterateConfiguration() {
+            const config = ITERATION_CONFIGS[iterationIndex % ITERATION_CONFIGS.length];
+            document.getElementById('twistNumber').value = config.twist_number;
+            document.getElementById('generationParam').value = config.generation;
+            document.getElementById('colorCharge').value = config.color;
+            validateConfiguration();
+            iterationIndex++;
         }
-
-        function nextStep() {
-            if (currentStep < 3) {
-                currentStep++;
-                updateProgressBar();
-            }
-        }
-
-        function previousStep() {
-            if (currentStep > 1) {
-                currentStep--;
-                updateProgressBar();
-            }
-        }
-
-        // Initialize the interface
-        updateProgressBar();
     </script>
 </body>
 </html>
