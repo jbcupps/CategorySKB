@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Particle Modeler - Configuration</title>
+    <title>Spacetime Klein Bottle Particle Modeler - Configuration</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
     <div class="header">
         <div class="container">
-            <h1>Particle Modeler</h1>
+            <h1>Spacetime Klein Bottle Particle Modeler</h1>
         </div>
     </div>
 
@@ -38,16 +38,16 @@
                 </select>
                 <p class="help-text">The quark type determines the fundamental properties we'll be working with.</p>
             </div>
-            <div id="quarkInfo" class="info-box" style="display: none;">
+            <div id="quarkInfo" class="info-box hidden">
                 <h3>Selected Quark Properties:</h3>
                 <div id="quarkProperties"></div>
             </div>
         </div>
 
         <div class="card" id="skbConfiguration">
-            <h2>Step 2: Configure Sub-SKB Parameters</h2>
+            <h2>Step 2: Configure SKB Parameters</h2>
             <div class="info-box">
-                Configure the specific parameters for your sub-Structure Knot Bundle (sub-SKB). These values will determine the physical properties of your particle.
+                Configure the specific parameters for your Spacetime Klein Bottle (SKB). These values will determine the physical properties of your particle.
             </div>
             <div class="form-group">
                 <label for="twistNumber">Twist Number</label>
@@ -141,9 +141,9 @@
                     <div><strong>Generation:</strong> ${quark.generation}</div>
                     <div><strong>Mass Range:</strong> ${quark.mass_range[0]} - ${quark.mass_range[1]} MeV</div>
                 `;
-                quarkInfo.style.display = 'block';
+                quarkInfo.classList.remove('hidden');
             } else {
-                quarkInfo.style.display = 'none';
+                quarkInfo.classList.add('hidden');
             }
         }
 
