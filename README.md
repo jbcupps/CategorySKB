@@ -1,6 +1,6 @@
 # SKB Particle Modeler
 
-A web-based tool for modeling and analyzing particles using the Sub-structure Klein Bottle (SKB) framework. This application provides an interactive interface for exploring particle properties through topological features and geometric relationships.
+A web-based tool for modeling and analyzing particles using the Spacetime Klein Bottle (SKB) framework. This application provides an interactive interface for exploring particle properties through topological features and geometric relationships.
 
 ## Overview
 
