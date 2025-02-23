@@ -1,6 +1,14 @@
 import numpy as np
 from typing import List, Tuple, Dict
 from config import Config
+from flask import Blueprint, render_template, request, jsonify, current_app
+from pathlib import Path
+from . import analysis
+from . import sub_skb_validator
+from . import skb_quark_integration
+from .errors import ValidationError, IntegrationError, AnalysisError
+
+bp = Blueprint('skb', __name__, url_prefix='/skb')
 
 class ValidationError(Exception):
     pass
@@ -82,3 +90,51 @@ def validate_sub_skb(sub_skb: SubSKB, quark_name: str, gamma: float, epsilon: fl
     }
     results['overall_match'] = all(results.values())
     return results
+
+@bp.route('/validate', methods=['POST'])
+def validate_skb():
+    try:
+        data = request.get_json()
+        if not data:
+            raise ValidationError("No data provided")
+        
+        current_app.logger.info(f"Validating SKB data: {data}")
+        validator = sub_skb_validator.SKBValidator()
+        result = validator.validate(data)
+        current_app.logger.info(f"Validation result: {result}")
+        return jsonify(result)
+    except Exception as e:
+        current_app.logger.error(f"Validation error: {str(e)}")
+        raise ValidationError(str(e))
+
+@bp.route('/analyze', methods=['POST'])
+def analyze_data():
+    try:
+        data = request.get_json()
+        if not data:
+            raise AnalysisError("No data provided")
+        
+        current_app.logger.info(f"Analyzing SKB data: {data}")
+        analyzer = analysis.Analyzer()
+        result = analyzer.process(data)
+        current_app.logger.info(f"Analysis result: {result}")
+        return jsonify(result)
+    except Exception as e:
+        current_app.logger.error(f"Analysis error: {str(e)}")
+        raise AnalysisError(str(e))
+
+@bp.route('/integrate', methods=['POST'])
+def integrate_quark():
+    try:
+        data = request.get_json()
+        if not data:
+            raise IntegrationError("No data provided")
+        
+        current_app.logger.info(f"Integrating quark data: {data}")
+        integrator = skb_quark_integration.QuarkIntegrator()
+        result = integrator.integrate(data)
+        current_app.logger.info(f"Integration result: {result}")
+        return jsonify(result)
+    except Exception as e:
+        current_app.logger.error(f"Integration error: {str(e)}")
+        raise IntegrationError(str(e))
