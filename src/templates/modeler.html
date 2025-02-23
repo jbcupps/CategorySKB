@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quark Modeler - Step {{ step }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body>
+    <div class="wizard-container">
+        <div class="progress-bar">
+            <div class="progress-step {% if step >= 1 %}active{% endif %}">
+                <div class="step-number">1</div>
+                <div class="step-label">Basic Properties</div>
+            </div>
+            <div class="progress-step {% if step >= 2 %}active{% endif %}">
+                <div class="step-number">2</div>
+                <div class="step-label">Configuration</div>
+            </div>
+            <div class="progress-step {% if step >= 3 %}active{% endif %}">
+                <div class="step-number">3</div>
+                <div class="step-label">Advanced Setup</div>
+            </div>
+            <div class="progress-step {% if step >= 4 %}active{% endif %}">
+                <div class="step-number">4</div>
+                <div class="step-label">Review</div>
+            </div>
+        </div>
+
+        <div class="wizard-content">
+            {% if step == 1 %}
+            <div class="step-content">
+                <h2>Let's Start with Basic Properties</h2>
+                <p class="step-description">First, we'll set up the fundamental characteristics of your quark.</p>
+
+                {% if tutorial_mode %}
+                <div class="tutorial-box">
+                    <h3>Understanding Quark Properties</h3>
+                    <p>Quarks are fundamental particles that come in different generations and colors. The generation 
+                    determines the quark's mass range, while the color charge is a property that determines how 
+                    quarks interact with each other.</p>
+                </div>
+                {% endif %}
+
+                <form id="basicPropertiesForm" onsubmit="return saveAndContinue(1)">
+                    <div class="form-group">
+                        <label class="form-label" for="generation">Generation:</label>
+                        <select id="generation" name="generation" class="form-control" required>
+                            <option value="">Select a generation...</option>
+                            <option value="1">First Generation (up/down)</option>
+                            <option value="2">Second Generation (charm/strange)</option>
+                            <option value="3">Third Generation (top/bottom)</option>
+                        </select>
+                        <div class="help-text">The generation affects the mass range of your quark.</div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="color">Color Charge:</label>
+                        <select id="color" name="color" class="form-control" required>
+                            <option value="">Select a color charge...</option>
+                            <option value="red">Red</option>
+                            <option value="green">Green</option>
+                            <option value="blue">Blue</option>
+                        </select>
+                        <div class="help-text">Color charge determines how quarks combine to form particles.</div>
+                    </div>
+
+                    {% if tutorial_mode %}
+                    <div class="info-panel">
+                        <h4>Did you know?</h4>
+                        <p>The "color" in color charge isn't related to visible colors - it's just a way physicists 
+                        describe how quarks combine. All stable particles must be "colorless"!</p>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+            {% elif step == 2 %}
+            <div class="step-content">
+                <h2>Quark Configuration</h2>
+                <p class="step-description">Now, let's configure the specific properties of your quark.</p>
+
+                {% if tutorial_mode %}
+                <div class="tutorial-box">
+                    <h3>Understanding Twist Numbers</h3>
+                    <p>Twist numbers are fundamental to the SKB model. They determine how the spacetime manifold 
+                    twists, which directly relates to the particle's physical properties.</p>
+                </div>
+                {% endif %}
+
+                <form id="configurationForm" onsubmit="return saveAndContinue(2)">
+                    <div class="form-group">
+                        <label class="form-label" for="twistNumber">Twist Number:</label>
+                        <input type="number" id="twistNumber" name="twistNumber" class="form-control" required
+                               step="1" min="-3" max="3">
+                        <div class="help-text">The twist number affects the quark's charge and other quantum properties.</div>
+                    </div>
+
+                    {% if tutorial_mode %}
+                    <div class="info-panel">
+                        <h4>Tip:</h4>
+                        <p>Twist numbers typically range from -3 to 3. The sign and magnitude affect different 
+                        properties of the quark.</p>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+            {% elif step == 3 %}
+            <div class="step-content">
+                <h2>Advanced Configuration</h2>
+                <p class="step-description">Let's set up the advanced properties of your quark.</p>
+
+                {% if tutorial_mode %}
+                <div class="tutorial-box">
+                    <h3>Understanding Linking Pairs</h3>
+                    <p>Linking pairs represent how different parts of the quark structure interact with each other. 
+                    These interactions contribute to the quark's mass and other properties.</p>
+                </div>
+                {% endif %}
+
+                <form id="advancedForm" onsubmit="return saveAndContinue(3)">
+                    <div id="linkingPairsContainer">
+                        <div class="form-group">
+                            <label class="form-label">Linking Pair #1:</label>
+                            <div class="linking-pair-inputs">
+                                <input type="number" class="form-control" placeholder="i" required>
+                                <input type="number" class="form-control" placeholder="j" required>
+                                <input type="number" class="form-control" placeholder="value" required>
+                                <button type="button" class="btn btn-secondary" onclick="addLinkingPair()">+</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if tutorial_mode %}
+                    <div class="info-panel">
+                        <h4>Understanding Linking Pairs:</h4>
+                        <ul>
+                            <li>i and j represent the points being linked</li>
+                            <li>The value represents the strength of the link</li>
+                            <li>You can add multiple linking pairs</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                </form>
+            </div>
+
+            {% elif step == 4 %}
+            <div class="step-content">
+                <h2>Review Your Quark</h2>
+                <p class="step-description">Let's review your quark configuration before analysis.</p>
+
+                <div class="review-panel">
+                    <div class="property-card">
+                        <h3>Basic Properties</h3>
+                        <div class="property-details">
+                            <p><strong>Generation:</strong> <span id="reviewGeneration"></span></p>
+                            <p><strong>Color Charge:</strong> <span id="reviewColor"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="property-card">
+                        <h3>Configuration</h3>
+                        <div class="property-details">
+                            <p><strong>Twist Number:</strong> <span id="reviewTwist"></span></p>
+                        </div>
+                    </div>
+
+                    <div class="property-card">
+                        <h3>Linking Pairs</h3>
+                        <div id="reviewLinkingPairs"></div>
+                    </div>
+
+                    <div class="property-card">
+                        <h3>Calculated Properties</h3>
+                        <div id="calculatedProperties">
+                            <p>Click "Analyze" to calculate properties</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-panel">
+                    <button onclick="analyzeQuark()" class="btn btn-primary">Analyze Quark</button>
+                    <button onclick="saveConfiguration()" class="btn btn-secondary">Save Configuration</button>
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="wizard-navigation">
+                {% if step > 1 %}
+                <button onclick="previousStep()" class="btn btn-secondary">← Previous</button>
+                {% endif %}
+                
+                {% if step < 4 %}
+                <button onclick="nextStep()" class="btn btn-primary">Next →</button>
+                {% else %}
+                <button onclick="finishModeling()" class="btn btn-success">Finish</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Store form data between steps
+        let quarkData = JSON.parse(localStorage.getItem('quarkData') || '{}');
+
+        function saveAndContinue(step) {
+            const form = document.querySelector(`form`);
+            const formData = new FormData(form);
+            
+            // Update stored data
+            for (let [key, value] of formData.entries()) {
+                quarkData[key] = value;
+            }
+            
+            localStorage.setItem('quarkData', JSON.stringify(quarkData));
+            nextStep();
+            return false; // Prevent form submission
+        }
+
+        function previousStep() {
+            const currentStep = {{ step }};
+            window.location.href = `?step=${currentStep - 1}{% if tutorial_mode %}&tutorial=true{% endif %}`;
+        }
+
+        function nextStep() {
+            const currentStep = {{ step }};
+            window.location.href = `?step=${currentStep + 1}{% if tutorial_mode %}&tutorial=true{% endif %}`;
+        }
+
+        function addLinkingPair() {
+            const container = document.getElementById('linkingPairsContainer');
+            const pairCount = container.children.length + 1;
+            
+            const newPair = document.createElement('div');
+            newPair.className = 'form-group';
+            newPair.innerHTML = `
+                <label class="form-label">Linking Pair #${pairCount}:</label>
+                <div class="linking-pair-inputs">
+                    <input type="number" class="form-control" placeholder="i" required>
+                    <input type="number" class="form-control" placeholder="j" required>
+                    <input type="number" class="form-control" placeholder="value" required>
+                    <button type="button" class="btn btn-danger" onclick="removeLinkingPair(this)">-</button>
+                </div>
+            `;
+            
+            container.appendChild(newPair);
+        }
+
+        function removeLinkingPair(button) {
+            button.closest('.form-group').remove();
+        }
+
+        function analyzeQuark() {
+            const data = {
+                generation: quarkData.generation,
+                color: quarkData.color,
+                twist_number: quarkData.twistNumber,
+                linking_pairs: quarkData.linkingPairs || []
+            };
+
+            fetch('/validate_quark', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                const propertiesDiv = document.getElementById('calculatedProperties');
+                propertiesDiv.innerHTML = `
+                    <p><strong>Charge:</strong> ${result.charge}</p>
+                    <p><strong>Mass:</strong> ${result.mass} GeV/c²</p>
+                    <p><strong>Spin:</strong> ${result.spin} ℏ</p>
+                `;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred during analysis');
+            });
+        }
+
+        function saveConfiguration() {
+            const blob = new Blob([JSON.stringify(quarkData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'quark_configuration.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function finishModeling() {
+            localStorage.removeItem('quarkData');
+            window.location.href = '/';
+        }
+
+        // Load saved data when page loads
+        window.onload = function() {
+            if ({{ step }} === 4) {
+                document.getElementById('reviewGeneration').textContent = quarkData.generation;
+                document.getElementById('reviewColor').textContent = quarkData.color;
+                document.getElementById('reviewTwist').textContent = quarkData.twistNumber;
+                
+                const linkingPairsDiv = document.getElementById('reviewLinkingPairs');
+                if (quarkData.linkingPairs && quarkData.linkingPairs.length > 0) {
+                    linkingPairsDiv.innerHTML = quarkData.linkingPairs.map((pair, index) => `
+                        <p>Pair ${index + 1}: (${pair.i}, ${pair.j}) = ${pair.value}</p>
+                    `).join('');
+                } else {
+                    linkingPairsDiv.innerHTML = '<p>No linking pairs defined</p>';
+                }
+            }
+        };
+    </script>
+</body>
+</html>

@@ -1,8 +1,19 @@
 import numpy as np
 from typing import List, Tuple, Dict
+from config import Config
+
+class ValidationError(Exception):
+    pass
 
 class SubSKB:
     def __init__(self, twist_number: int, generational_parameter: int = 1, color: str = 'red'):
+        if not isinstance(twist_number, int):
+            raise ValidationError("Twist number must be an integer")
+        if generational_parameter not in Config.VALID_GENERATIONS:
+            raise ValidationError(f"Generation must be one of {Config.VALID_GENERATIONS}")
+        if color not in Config.VALID_COLORS:
+            raise ValidationError(f"Color must be one of {Config.VALID_COLORS}")
+            
         self.twist_number = twist_number
         self.generational_parameter = generational_parameter
         self.color = color
