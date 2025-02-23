@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SKB Particle Modeler - Analysis</title>
+    <link rel="stylesheet" href="styles.css">
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>SKB Particle Modeler</h1>
+            <p>Date: {{ date }}</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="navigation">
+            <a href="particle_modeler.html" class="button secondary">← Introduction</a>
+            <a href="modeler.html" class="button">Modeler →</a>
+        </div>
+
+        <div class="card">
+            <h2>Particle Configuration</h2>
+            <div class="info-box">
+                Configure and analyze particle properties using the SKB model. Select from predefined particles or create custom configurations.
+            </div>
+            
+            <div class="controls">
+                <div class="control-group">
+                    <label for="particleSelect">Select predefined particle:</label>
+                    <select id="particleSelect" name="particleSelect" aria-label="Select particle to analyze">
+                        <option value="">-- Custom --</option>
+                        {% for particle in particles %}
+                            <option value="{{ particle }}">{{ particle }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                
+                <div class="control-group">
+                    <label for="twistNumbers">Twist Numbers:</label>
+                    <input type="text" id="twistNumbers" placeholder="e.g., 2, 2, -1" aria-label="Twist numbers as comma-separated integers">
+                    <p class="help-text">Enter comma-separated twist numbers</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="linkingPairs">Linking Pairs:</label>
+                    <input type="text" id="linkingPairs" placeholder="e.g., 0,1,1;1,2,1" aria-label="Linking pairs as semicolon-separated triples">
+                    <p class="help-text">Enter semicolon-separated linking pairs</p>
+                </div>
+
+                <div class="control-group">
+                    <label for="customName">Particle Name:</label>
+                    <input type="text" id="customName" placeholder="custom" aria-label="Custom particle name">
+                    <p class="help-text">Name for your custom particle</p>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button onclick="analyzeAll()" class="button">Analyze All Particles</button>
+                <button onclick="analyzeParticle()" class="button">Analyze Selected</button>
+                <button onclick="startIteration()" class="button secondary">Start Iteration</button>
+                <button onclick="stopIteration()" class="button secondary">Stop Iteration</button>
+            </div>
+
+            <div id="iterationStatus" class="status-display"></div>
+            <div id="results" class="results-display"></div>
+        </div>
+
+        <div class="card">
+            <h2>Mass Parameters</h2>
+            <div class="info-box">
+                Configure and update mass parameters for particle analysis.
+            </div>
+            
+            <div class="control-group">
+                <label>γ (Gamma): <input type="number" id="gamma" step="0.1" min="-10" max="10" required></label>
+                <p class="help-text">Mass scale parameter</p>
+            </div>
+            
+            <div class="control-group">
+                <label>δ (Delta): <input type="number" id="delta" step="0.1" min="-10" max="10" required></label>
+                <p class="help-text">Mass offset parameter</p>
+            </div>
+            
+            <div class="control-group">
+                <label>ε (Epsilon): <input type="number" id="epsilon" step="0.1" min="-10" max="10" required></label>
+                <p class="help-text">Mass correction parameter</p>
+            </div>
+
+            <div class="button-group">
+                <button onclick="fitParameters()" class="button">Fit Parameters</button>
+                <button onclick="updateParameters()" class="button">Update Parameters</button>
+            </div>
+            
+            <div id="parameters" class="info-box"></div>
+        </div>
+    </div>
+
+    <script>
+        // Predefined particle configurations
+        const particleConfigs = {
+            'proton': {
+                twistNumbers: '2,2,-1',
+                linkingPairs: '0,1,1;1,2,1;0,2,1',
+                name: 'proton'
+            },
+            'neutron': {
+                twistNumbers: '2,-1,-1',
+                linkingPairs: '0,1,1;1,2,1;0,2,1',
+                name: 'neutron'
+            },
+            'electron': {
+                twistNumbers: '2,1',
+                linkingPairs: '0,1,1',
+                name: 'electron'
+            }
+        };
+
+        // Configurations for iteration
+        const iterationValues = [
+            {
+                twistNumbers: '2,2,-1',
+                linkingPairs: '0,1,1;1,2,1;0,2,1'
+            },
+            {
+                twistNumbers: '2,-1,-1',
+                linkingPairs: '0,1,1;1,2,1;0,2,1'
+            },
+            {
+                twistNumbers: '2,1',
+                linkingPairs: '0,1,1'
+            },
+            {
+                twistNumbers: '-3',
+                linkingPairs: ''
+            }
+        ];
+
+        let iterationInterval = null;
+        let currentIterationIndex = 0;
+
+        function showError(elementId, message) {
+            const div = document.getElementById(elementId);
+            div.innerHTML = `<p class="error">Error: ${message}</p>`;
+        }
+
+        function displayResults(data, elementId) {
+            const div = document.getElementById(elementId);
+            if (data.error) {
+                showError(elementId, data.error);
+                return;
+            }
+            if (Array.isArray(data)) {
+                let html = '<table><tr><th>Particle</th><th>Pred. Charge</th><th>Act. Charge</th><th>Pred. Mass</th><th>Act. Mass</th><th>Mass Error %</th></tr>';
+                data.forEach(r => {
+                    html += `<tr><td>${r.name}</td><td>${r.predicted_charge.toFixed(2)}</td><td>${r.actual_charge}</td><td>${r.predicted_mass.toFixed(3)}</td><td>${r.actual_mass}</td><td>${r.mass_error_percent.toFixed(2)}%</td></tr>`;
+                });
+                html += '</table>';
+                div.innerHTML = html;
+            } else {
+                div.innerHTML = `<p>${data.name}: Charge: ${data.predicted_charge.toFixed(2)} vs ${data.actual_charge}, Mass: ${data.predicted_mass.toFixed(3)} vs ${data.actual_mass} (Error: ${data.mass_error_percent.toFixed(2)}%)</p>`;
+            }
+        }
+
+        async function handleFetch(url, options = {}) {
+            try {
+                const response = await fetch(url, options);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return await response.json();
+            } catch (error) {
+                console.error('Fetch error:', error);
+                throw error;
+            }
+        }
+
+        // Update form fields with configuration
+        function updateFields(config) {
+            document.getElementById('twistNumbers').value = config.twistNumbers;
+            document.getElementById('linkingPairs').value = config.linkingPairs;
+            if (config.name) {
+                document.getElementById('customName').value = config.name;
+            }
+        }
+
+        // Handle particle selection
+        document.getElementById('particleSelect').addEventListener('change', function() {
+            const selectedParticle = this.value;
+            if (selectedParticle && particleConfigs[selectedParticle]) {
+                updateFields(particleConfigs[selectedParticle]);
+            } else {
+                // Clear fields if "Custom" is selected
+                document.getElementById('twistNumbers').value = '';
+                document.getElementById('linkingPairs').value = '';
+                document.getElementById('customName').value = 'custom';
+            }
+        });
+
+        async function analyzeAll() {
+            try {
+                const data = await handleFetch('/analyze_all');
+                displayResults(data, 'results');
+            } catch (error) {
+                showError('results', 'Failed to analyze all particles');
+            }
+        }
+
+        async function analyzeParticle() {
+            try {
+                const twists = document.getElementById('twistNumbers').value.trim();
+                const pairs = document.getElementById('linkingPairs').value.trim();
+                const name = document.getElementById('customName').value.trim() || 'custom';
+
+                if (!twists) {
+                    throw new Error('Twist numbers are required');
+                }
+
+                const data = await handleFetch('/analyze_custom', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        twist_numbers: twists.split(',').map(n => parseInt(n.trim())),
+                        linking_pairs: pairs ? pairs.split(';').map(p => {
+                            const [i, j, v] = p.split(',').map(n => parseInt(n.trim()));
+                            return {i, j, value: v};
+                        }) : [],
+                        particle_name: name
+                    })
+                });
+                displayResults(data, 'results');
+            } catch (error) {
+                showError('results', error.message || 'Failed to analyze particle');
+            }
+        }
+
+        function updateIterationStatus() {
+            const status = document.getElementById('iterationStatus');
+            status.innerHTML = `Iteration ${currentIterationIndex + 1} of ${iterationValues.length}`;
+            status.classList.add('active');
+        }
+
+        async function runIteration() {
+            const config = iterationValues[currentIterationIndex];
+            updateFields({
+                ...config,
+                name: `iteration_${currentIterationIndex + 1}`
+            });
+            await analyzeParticle();
+            updateIterationStatus();
+            
+            currentIterationIndex = (currentIterationIndex + 1) % iterationValues.length;
+        }
+
+        function startIteration() {
+            if (iterationInterval) return;
+            currentIterationIndex = 0;
+            iterationInterval = setInterval(runIteration, 2000);
+            document.getElementById('iterationStatus').classList.add('active');
+            runIteration(); // Run first iteration immediately
+        }
+
+        function stopIteration() {
+            if (iterationInterval) {
+                clearInterval(iterationInterval);
+                iterationInterval = null;
+                document.getElementById('iterationStatus').classList.remove('active');
+            }
+        }
+
+        async function fitParameters() {
+            try {
+                const data = await handleFetch('/fit_parameters', {method: 'POST'});
+                document.getElementById('gamma').value = data.gamma.toFixed(3);
+                document.getElementById('delta').value = data.delta.toFixed(3);
+                document.getElementById('epsilon').value = data.epsilon.toFixed(3);
+                document.getElementById('parameters').innerHTML = `Fitted: γ=${data.gamma.toFixed(3)}, δ=${data.delta.toFixed(3)}, ε=${data.epsilon.toFixed(3)}`;
+            } catch (error) {
+                showError('parameters', 'Failed to fit parameters');
+            }
+        }
+
+        async function updateParameters() {
+            try {
+                const gamma = parseFloat(document.getElementById('gamma').value);
+                const delta = parseFloat(document.getElementById('delta').value);
+                const epsilon = parseFloat(document.getElementById('epsilon').value);
+
+                if (isNaN(gamma) || isNaN(delta) || isNaN(epsilon)) {
+                    throw new Error('All parameters must be valid numbers');
+                }
+
+                const data = await handleFetch('/update_parameters', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({gamma, delta, epsilon})
+                });
+                document.getElementById('parameters').innerHTML = `Updated: γ=${data.gamma.toFixed(3)}, δ=${data.delta.toFixed(3)}, ε=${data.epsilon.toFixed(3)}`;
+            } catch (error) {
+                showError('parameters', error.message || 'Failed to update parameters');
+            }
+        }
+    </script>
+</body>
+</html>
