@@ -1,25 +1,21 @@
 from analysis import ModelAnalyzer
 
 def main():
-    # Create analyzer with initial parameters
     analyzer = ModelAnalyzer()
-    
-    print("Initial analysis with default parameters:")
+    print("Initial analysis:")
     results = analyzer.analyze_all_particles()
-    analyzer.print_analysis(results)
+    for result in results:
+        print(result)
     
-    print("\nFitting mass parameters...")
+    print("\nFitting parameters:")
     gamma, delta, epsilon = analyzer.fit_mass_parameters()
-    print(f"Fitted parameters:")
-    print(f"γ = {gamma:.3f}")
-    print(f"δ = {delta:.3f}")
-    print(f"ε = {epsilon:.3f}")
+    print(f"γ = {gamma:.3f}, δ = {delta:.3f}, ε = {epsilon:.3f}")
     
-    print("\nAnalysis with fitted parameters:")
     analyzer = ModelAnalyzer(gamma, delta, epsilon)
+    print("\nUpdated analysis:")
     results = analyzer.analyze_all_particles()
-    analyzer.print_analysis(results)
+    for result in results:
+        print(result)
 
 if __name__ == "__main__":
-    main()
     main()
