@@ -67,3 +67,20 @@ class ModelAnalyzer:
         ])
         gamma, delta, epsilon = np.linalg.solve(A, b)
         return gamma, delta, epsilon
+
+def test_skb_configuration(data: Dict) -> Dict:
+    try:
+        particle_name = data.get('particle_name')
+        twist_numbers = data.get('twist_numbers')
+        linking_pairs = data.get('linking_pairs')
+        
+        if not particle_name or not twist_numbers or not linking_pairs:
+            return {'error': 'Missing required data'}
+        
+        skb = create_particle(particle_name, twist_numbers, linking_pairs)
+        analyzer = ModelAnalyzer()
+        result = analyzer.analyze_particle(particle_name, skb)
+        
+        return result
+    except Exception as e:
+        return {'error': str(e)}

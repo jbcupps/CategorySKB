@@ -11,6 +11,7 @@ The SKB Particle Modeler implements the theoretical framework described in ["A C
 - Compare predicted values with actual measurements
 - Explore predefined particle configurations
 - Create and validate custom particle models
+- Test configurations of SKBs for the attached model
 
 ## Features
 
@@ -33,6 +34,13 @@ The SKB Particle Modeler implements the theoretical framework described in ["A C
 - Parameter validation and updating
 - Error percentage calculations
 
+### SKB Configuration Testing
+- Test configurations of SKBs for the attached model
+- Dynamic question-based interface for configuring SKBs
+- Conditional logic to present relevant questions based on user input
+- Real-time validation messages and feedback
+- Summary page to review and confirm the configuration before finalizing
+
 ## Usage
 
 1. **Basic Analysis**
@@ -50,12 +58,19 @@ The SKB Particle Modeler implements the theoretical framework described in ["A C
    - Start automated iteration for sequential processing
    - Review results in the formatted table display
 
+4. **SKB Configuration Testing**
+   - Navigate to the SKB configuration testing interface
+   - Follow the dynamic question-based interface to configure SKBs
+   - Review and confirm the configuration before finalizing
+   - Click "Test Configuration" to see results
+
 ## Interface Structure
 
-The application consists of three main pages:
+The application consists of four main pages:
 - **Introduction** (particle_modeler.html): Overview and basic concepts
 - **Modeler** (modeler.html): Main configuration interface
 - **Analysis** (index.html): Results and parameter management
+- **SKB Configuration Testing** (test_skb.html): Interface for testing SKB configurations
 
 ## Technical Details
 

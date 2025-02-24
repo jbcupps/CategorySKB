@@ -1,9 +1,10 @@
-from flask import Flask, render_template, send_from_directory
+from flask import Flask, render_template, send_from_directory, request, jsonify
 from pathlib import Path
 import os
 from dotenv import load_dotenv
 from .errors import register_error_handlers
 from .logging_config import setup_logging
+from .analysis import test_skb_configuration
 
 # Load environment variables
 load_dotenv()
@@ -53,6 +54,17 @@ def create_app(test_config=None):
     def analysis():
         app.logger.info('Serving analysis page')
         return render_template('analysis.html')
+
+    @app.route('/test_skb', methods=['POST'])
+    def test_skb():
+        try:
+            data = request.get_json()
+            if not data:
+                return jsonify({'error': 'No data provided'}), 400
+            result = test_skb_configuration(data)
+            return jsonify(result)
+        except Exception as e:
+            return jsonify({'error': str(e)}), 500
 
     # Register blueprints here
     from . import skb
